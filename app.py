@@ -29,9 +29,7 @@ def run_bot():
         except Exception as e:
             print(f"Bot Crashed: {e}")
             time.sleep(5)
-            print(f"Bot Crash: {e}")
-            time.sleep(5)
-
+            
 bot_thread = threading.Thread(target=run_bot, daemon=True)
 bot_thread.start()
 
