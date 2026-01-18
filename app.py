@@ -4,36 +4,45 @@ import database as db
 import threading
 import bot
 import time
+import sys
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# ডাটাবেস ইনিশিয়াল করা
+# Initialize DB
 db.init_db()
 
-# --- বট রান করা (ব্যাকগ্রাউন্ডে) ---
+# --- Bot Runner (Updated) ---
 def run_bot():
-    # বট রান হওয়ার আগে পুরনো কানেকশন ক্লিয়ার করা
+    # 1. Give the server a moment to start
+    time.sleep(2)
+    
+    print("--- 🔄 ATTEMPTING TO START BOT ---", flush=True)
+    
     try:
-        print("Cleaning webhook...")
-        bot.bot.remove_webhook() 
+        # 2. Remove any existing webhook (Fixes the silence issue)
+        bot.bot.remove_webhook()
         time.sleep(1)
+        print("--- ✅ WEBHOOK REMOVED ---", flush=True)
     except Exception as e:
-        print(f"Webhook error: {e}")
+        print(f"--- ⚠️ WEBHOOK REMOVE ERROR: {e} ---", flush=True)
 
-    # পোলিং শুরু
+    # 3. Start Polling Loop
     while True:
         try:
-            print("Bot starting polling...")
+            print("--- 🚀 BOT POLLING STARTED ---", flush=True)
+            # interval=0 means it checks instantly
             bot.bot.infinity_polling(timeout=10, long_polling_timeout=5)
         except Exception as e:
-            print(f"Bot Crashed: {e}")
+            print(f"--- ❌ BOT CRASHED: {e} ---", flush=True)
             time.sleep(5)
-            
+            print("--- 🔄 RESTARTING BOT ---", flush=True)
+
+# Start bot in a separate thread
 bot_thread = threading.Thread(target=run_bot, daemon=True)
 bot_thread.start()
 
-# --- ওয়েব রাউট ---
+# --- Routes ---
 
 def is_logged_in():
     return session.get('logged_in')
@@ -41,12 +50,16 @@ def is_logged_in():
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        if request.form.get('username') == Config.ADMIN_USERNAME and \
-           request.form.get('password') == Config.ADMIN_PASSWORD:
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        # Check against Config
+        if username == Config.ADMIN_USERNAME and password == Config.ADMIN_PASSWORD:
             session['logged_in'] = True
             return redirect(url_for('dashboard'))
         else:
-            flash('Wrong Username or Password')
+            flash('Invalid Credentials')
+            
     return render_template('login.html')
 
 @app.route('/dashboard')
@@ -55,9 +68,9 @@ def dashboard():
     
     vouchers = db.get_all_vouchers()
     stats = db.get_analytics()
-    channel = db.get_channel_id()
+    current_channel = db.get_channel_id()
     
-    return render_template('dashboard.html', vouchers=vouchers, stats=stats, channel=channel)
+    return render_template('dashboard.html', vouchers=vouchers, stats=stats, channel=current_channel)
 
 @app.route('/create_voucher', methods=['POST'])
 def create_voucher():
@@ -65,11 +78,11 @@ def create_voucher():
     
     minutes = request.form.get('minutes')
     max_use = request.form.get('max_use')
-    custom_code = request.form.get('custom_code') # অ্যাডমিনের দেওয়া কোড
+    custom_code = request.form.get('custom_code')
     
     if minutes and max_use:
         code, msg = db.create_voucher(minutes, max_use, custom_code)
-        flash(f"{'Success: ' + code if code else msg}")
+        flash(f'Result: {code if code else msg}')
     
     return redirect(url_for('dashboard'))
 
@@ -88,7 +101,8 @@ def delete_voucher(code):
 @app.route('/set_channel', methods=['POST'])
 def set_channel():
     if not is_logged_in(): return redirect(url_for('login'))
-    db.set_channel_id(request.form.get('chat_id'))
+    chat_id = request.form.get('chat_id')
+    db.set_channel_id(chat_id)
     flash('Channel Updated')
     return redirect(url_for('dashboard'))
 
