@@ -8,7 +8,12 @@ def get_bd_time():
     return datetime.now(tz)
 
 def generate_dynamic_password():
-    """Generates password: monirul + HHMM (BD Time)"""
+    """Generates password: monirul + HMM (12 Hour format without leading zero)"""
     now = get_bd_time()
-    time_str = now.strftime("%H%M")
-    return f"monirul{time_str}"
+    
+    # %I হলো ১২ ঘণ্টার ফরম্যাট (যেমন 02, 12)
+    # int() ব্যবহার করায় শুরুর শূন্য (0) চলে যাবে। (02 হয়ে যাবে 2)
+    hour = int(now.strftime("%I"))
+    minute = now.strftime("%M")
+    
+    return f"monirul{hour}{minute}"
