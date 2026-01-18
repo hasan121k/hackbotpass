@@ -3,8 +3,9 @@ import os
 class Config:
     # Render Environment Variables
     PORT = int(os.environ.get("PORT", 5000))
-    # আপনার বটের লম্বা টোকেনটি ডাবল কোটেশন " " এর ভেতর বসান
-BOT_TOKEN = "8360585659:AAEQQIK4nG-hHxWuFW1qz_Q4Gdhqcf_UJI0"
+    
+    # টোকেনটি অবশ্যই এই লাইনের সোজাসুজি (Indented) হতে হবে
+    BOT_TOKEN = "8360585659:AAEQQIk4nG-hHxWuFW1qz_Q4Gdhqcf_UJI0"
     
     # Admin Credentials
     ADMIN_USERNAME = os.environ.get("ADMIN_USER", "admin")
