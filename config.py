@@ -5,7 +5,7 @@ class Config:
     PORT = int(os.environ.get("PORT", 5000))
     
     # টোকেনটি অবশ্যই এই লাইনের সোজাসুজি (Indented) হতে হবে
-    BOT_TOKEN = "8360585659:AAEQQIk4nG-hHxWuFW1qz_Q4Gdhqcf_UJI0"
+    BOT_TOKEN = "8360585659:AAFIcrM8DkWSosr0CeRFNW197AJzm0N6Df8"
     
     # Admin Credentials
     ADMIN_USERNAME = os.environ.get("ADMIN_USER", "admin")
