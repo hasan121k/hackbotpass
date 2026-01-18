@@ -13,11 +13,22 @@ db.init_db()
 
 # --- বট রান করা (ব্যাকগ্রাউন্ডে) ---
 def run_bot():
+    # বট রান হওয়ার আগে পুরনো কানেকশন ক্লিয়ার করা
+    try:
+        print("Cleaning webhook...")
+        bot.bot.remove_webhook() 
+        time.sleep(1)
+    except Exception as e:
+        print(f"Webhook error: {e}")
+
+    # পোলিং শুরু
     while True:
         try:
-            print("Bot starting...")
-            bot.bot.infinity_polling()
+            print("Bot starting polling...")
+            bot.bot.infinity_polling(timeout=10, long_polling_timeout=5)
         except Exception as e:
+            print(f"Bot Crashed: {e}")
+            time.sleep(5)
             print(f"Bot Crash: {e}")
             time.sleep(5)
 
